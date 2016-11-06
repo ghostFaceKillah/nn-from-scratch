@@ -57,6 +57,15 @@ def unbinarize(y):
     return np.sum(y * np.array(range(0,  y.shape[1])), axis=1)
 
 
+def show_elu_properties():
+    x = np.linspace(-5., 5., 100)
+    pd.DataFrame({
+        'f': elu(x),
+        'df': d_elu(x)
+    }).plot()
+    plt.show()
+
+
 def show_data_sample(x, y, A=None, b=None):
     """ Plot a sample of data """
     class_marks = zip(range(4), ['o', 'x', 'v', '$\heartsuit$'], 'bryg')
@@ -84,49 +93,115 @@ def relu(x):
     x[x < 0] = 0
     return x
 
+
 def draw_params(size):
     return np.random.normal(0.0, 0.1, size)
 
-W_1 = draw_params((4, 2))
-b_1 = draw_params((4, 1))
-W_2 = draw_params((4, 4))
-b_2 = draw_params((4, 1))
 
-i = 0
+def elu(x, alpha=1.0):
+    y = x.copy()
+    y[x < 0] = alpha * (np.exp(y[x < 0]) - 1)
+    return y
 
-accuracy_acc = []
+def d_elu(x, alpha=1.0):
+    y = elu(x)
+    y[y > 0] = 1.0
+    y[y <= 0] += alpha
+    return y
 
-for i in tqdm.tqdm(range(7000)):
-    x, y = draw_sample()
 
-    # forward pass
-    a = np.dot(x, W_1.T) + b_1.T
-    y_1 = relu(a)
-    y_hat = sigmoid(np.dot(y_1, W_2.T) + b_2.T)
+def one_relu_run():
+    W_1 = draw_params((4, 2))
+    b_1 = draw_params((4, 1))
+    W_2 = draw_params((4, 4))
+    b_2 = draw_params((4, 1))
 
-    err = y_hat - y
+    i = 0
 
-    pred_class = np.argmax(y_hat, axis=1)
-    accuracy = accuracy_score(unbinarize(y), pred_class)
-    accuracy_acc.append(accuracy)
+    accuracy_acc = []
 
-    # backward pass
-    dW_2 = np.dot(err.T, y_1) / y_1.shape[0]
-    db_2 = err.mean()
+    for i in tqdm.tqdm(range(7000)):
+        x, y = draw_sample()
 
-    dy_1 = np.dot(err, W_2)
-    da = dy_1 * (a > 0).astype(float)
-    
-    dW_1 = np.dot(da.T, x) / x.shape[0]
-    db_1 = da.mean()
+        # forward pass
+        a = np.dot(x, W_1.T) + b_1.T
+        y_1 = relu(a)
+        y_hat = sigmoid(np.dot(y_1, W_2.T) + b_2.T)
 
-    W_1 -= LR * dW_1
-    b_1 -= LR * db_1
+        err = y_hat - y
 
-    W_2 -= LR * dW_2
-    b_2 -= LR * db_2
+        pred_class = np.argmax(y_hat, axis=1)
+        accuracy = accuracy_score(unbinarize(y), pred_class)
+        accuracy_acc.append(accuracy)
 
-show_data_sample(x, y)
+        # backward pass
+        dW_2 = np.dot(err.T, y_1) / y_1.shape[0]
+        db_2 = err.mean()
 
-pd.Series(accuracy_acc).plot()
-plt.show()
+        dy_1 = np.dot(err, W_2)
+        da = dy_1 * (a > 0).astype(float)
+        
+        dW_1 = np.dot(da.T, x) / x.shape[0]
+        db_1 = da.mean()
+
+        W_1 -= LR * dW_1
+        b_1 -= LR * db_1
+
+        W_2 -= LR * dW_2
+        b_2 -= LR * db_2
+
+    show_data_sample(x, y)
+    return accuracy_acc
+
+
+def one_elu_run():
+    W_1 = draw_params((4, 2))
+    b_1 = draw_params((4, 1))
+    W_2 = draw_params((4, 4))
+    b_2 = draw_params((4, 1))
+
+    i = 0
+
+    accuracy_acc = []
+
+    for i in tqdm.tqdm(range(7000)):
+        x, y = draw_sample()
+
+        # forward pass
+        a = np.dot(x, W_1.T) + b_1.T
+        y_1 = elu(a)
+        y_hat = sigmoid(np.dot(y_1, W_2.T) + b_2.T)
+
+        err = y_hat - y
+
+        pred_class = np.argmax(y_hat, axis=1)
+        accuracy = accuracy_score(unbinarize(y), pred_class)
+        accuracy_acc.append(accuracy)
+
+        # backward pass
+        dW_2 = np.dot(err.T, y_1) / y_1.shape[0]
+        db_2 = err.mean()
+
+        dy_1 = np.dot(err, W_2)
+        da = dy_1 * d_elu(a)
+        
+        dW_1 = np.dot(da.T, x) / x.shape[0]
+        db_1 = da.mean()
+
+        W_1 -= LR * dW_1
+        b_1 -= LR * db_1
+
+        W_2 -= LR * dW_2
+        b_2 -= LR * db_2
+
+    show_data_sample(x, y)
+    return accuracy_acc
+
+
+if __name__ == '__main__':
+    accuracy_acc = one_relu_run()
+    pd.DataFrame({
+        'elu': one_elu_run(), 
+        'relu': one_relu_run()
+    }).plot()
+    plt.show()
