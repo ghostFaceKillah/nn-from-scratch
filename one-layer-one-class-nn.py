@@ -85,8 +85,8 @@ for i in range(5000):
     err_rate = ((y - pred)** 2).mean()
     err_acc.append(err_rate)
 
-    # backward pass
-    dW_2 = np.multiply(err[:, np.newaxis], y_1).mean(axis=0)
+    # backward pass 
+    dW_2 = np.dot(err[:, np.newaxis].T, y_1) / y_1.shape[0]
     db_2 = err.mean()
 
     dy_1 = np.dot(err[:, np.newaxis], W_2)
