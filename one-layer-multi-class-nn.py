@@ -194,12 +194,12 @@ def one_elu_run():
         W_2 -= LR * dW_2
         b_2 -= LR * db_2
 
-    show_data_sample(x, y)
+    # show_data_sample(x, y)
     return accuracy_acc
 
 
 if __name__ == '__main__':
-    accuracy_acc = one_relu_run()
+    # accuracy_acc = one_relu_run()
     pd.DataFrame({
         'elu': one_elu_run(), 
         'relu': one_relu_run()
