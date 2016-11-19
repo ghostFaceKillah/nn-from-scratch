@@ -5,7 +5,7 @@ lower-then-usually seen level of neural nets.
 
 Keras & Tensorflow made me lazy - I do this to redeem myself.
 
-![Results](https://raw.githubusercontent.com/ghostFaceKillah/nn-from-scratch/blob/master/img/one-layer-two-class-nn.png)
+![Results](https://raw.githubusercontent.com/ghostFaceKillah/nn-from-scratch/master/img/one-layer-two-class-nn.png)
 
 # What is done
 
